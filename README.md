@@ -19,11 +19,9 @@ of bytes with values between 1 and 255. The 0 value is reserved as the string te
 and is also known as the NUL byte.
 
 In order to turn binary data into Base252 each byte with the 0 value needs to be
-converted into to a two byte sequence with the values 245 128.
+converted into a two byte sequence with the values 245 128.
 
-Subsequently each instance of 245 encountered in the data needs to be converted
-as well, using the two byte sequence 248 184 or 248 245. This conversion process
-is known as escaping, which I'll describe in detail below.
+This conversion process is known as escaping, which I'll describe in detail below.
 
 Escaping
 --------
@@ -39,8 +37,8 @@ In order to escape any ASCII character Base252 reserves character value 245, 246
 245 + char / 64
 128 + char % 64
 ```
-Subsequently each occurance of 245, 246, 247 and 248 in the data needs to
-be escaped.
+Besides the 0 byte each occurance of 245, 246, 247 and 248 in the data needs to
+be escaped using the formula above.
 
 Characters 128 through 191 cannot be as easily fully escaped since they are
 typically used for the second byte of each escaped code. However,
@@ -48,7 +46,7 @@ since the second byte needs to be modulated by 64, a value between 64 and 127,
 or between 192 and 255, could be used to encode the second byte. All character
 values are valid for the second byte, with the exception of 0.
 
-Subsequently there are 3 valid ways to fully escape the 0 value, using 245 64,
+Subsequently there are three valid ways to fully escape the 0 value: 245 64,
 245 128, and 245 192.
 
 The example below escapes the 5 required codes as well as the '\\' character.
@@ -83,34 +81,35 @@ The example below escapes the 5 required codes as well as the '\\' character.
         *output++ = 0;
 ```
 
-Translating Base252 data back to its original format is even easier.
+Translating Base252 data back to its original format is even easier and the
+code below should translate any proper Base252 string.
 ```c
-        for (cnt = 0 ; cnt < size ; cnt++)
+        while (input[cnt] != 0)
         {
                 switch (input[cnt])
                 {
                         case 245:
                                 cnt++;
-                                *output++ = 0 + input[cnt] % 64;
+                                *output++ = 0 + input[cnt++] % 64;
                                 break;
 
                         case 246:
                                 cnt++;
-                                *output++ = 64 + input[cnt] % 64;
+                                *output++ = 64 + input[cnt++] % 64;
                                 break;
 
                         case 247:
                                 cnt++;
-                                *output++ = 128 + input[cnt] % 64;
+                                *output++ = 128 + input[cnt++] % 64;
                                 break;
 
                         case 248:
                                 cnt++;
-                                *output++ = 192 + input[cnt] % 64;
+                                *output++ = 192 + input[cnt++] % 64;
                                 break;
 
                         default:
-                                *output++ = input[cnt];
+                                *output++ = input[cnt++];
                                 break;
                 }
         }
