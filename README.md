@@ -120,4 +120,4 @@ for compressed or encrypted data.
 
 JSON
 ----
-Base252 should work with properly written JSON parsers to encode binary data, keep in mind that in this case characters in the 1 to 31 range need to be escaped, as well as the '"' and '\' characters.
+Base252 should work with properly written JSON parsers to encode binary data, keep in mind that in this case characters in the 1 to 31 range need to be escaped, as well as the '"' and '\\' characters.
