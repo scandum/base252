@@ -23,7 +23,7 @@ as well, using 0xF8 0xB8.
 Escaping
 --------
 
-Earlier we saw the escaping of 0x00 to 0xC0 0x80. However, in many cases
+Earlier we saw the escaping of 0x00 to 0xF5 0x80. However, in many cases
 programming languages have special characters that pose processing or security
 issues when they are not escaped. The \\ and " characters come to mind, but in
 theory any character can be a special character that needs to be escaped.
@@ -34,8 +34,8 @@ In order to escape any ASCII character Base252 reserves 0xF5, 0xF6, 0xF7 and
 0xF5 + char / 64
 0x80 + char % 64
 ```
-Subsequently we can fully escape any character from 0 through 255 with the
-exception of 0xF5 through 0xF8.
+Subsequently each occurance of 0xF5, 0xF6, 0xF7 and 0xF8 in the data needs to
+be escaped.
 
 Characters 128 through 191 cannot be as easily escaped since 128 through 191 is
 typically used for the second byte of each escaped code. However, since the
@@ -111,12 +111,16 @@ Translating Base252 data back to its original format is even easier.
         *output++ = 0;
 ```
 
+Termination
+-----------
+A Base252 string needs to be terminated with a NUL byte.
+
 Overhead
 --------
-After this conversion we have a best case overhead of 0% (notably when turning
+After Base252 conversion we have a best case overhead of 0% (notably when turning
 ASCII or UTF-8 into Base252) and a worst case overhead of 100%. The average
 case should be an overhead of 1.7% and this should also be the typical case
-for compressed or encrypted data.
+for compressed / encrypted data.
 
 JSON
 ----
