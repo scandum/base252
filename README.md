@@ -5,45 +5,51 @@ The Base252 encoding draws inspiration from UTF-8, its strengths are minimal ove
 
 | Dec |  Hex | Name    | Escape Code |
 |----- | ---- | ------  | ------ |
-|  0   | 0x00 | NUL     | 0xF5 0x80 |
-| 245  | 0xF5 | ESC_0   | 0xF8 0xB5 |
-| 246  | 0xF6 | ESC_64  | 0xF8 0xB6 |
-| 247  | 0xF7 | ESC_128 | 0xF8 0xB7 |
-| 248  | 0xF8 | ESC_192 | 0xF8 0xB8 |
+|  0   | 0x00 | NUL     | 245 128 |
+| 245  | 0xF5 | ESC_0   | 248 245 |
+| 246  | 0xF6 | ESC_64  | 248 246 |
+| 247  | 0xF7 | ESC_128 | 248 247 |
+| 248  | 0xF8 | ESC_192 | 248 248 |
 
 Translating binary data to Base252
 ----------------------------------
 
-The first step is to convert the data into C strings. This is done by translating
-each NUL byte 0x00 to the two byte 0xF5 0x80 sequence.
+The first step is to convert the data into a C string. A C string exists of a sequence
+of bytes with values between 1 and 255. The 0 value is reserved as the string terminator
+and is also known as the NUL byte.
 
-Subsequently each instance of 0xF5 encountered in the data needs to be translated
-as well, using 0xF8 0xB8.
+In order to turn binary data into Base252 each byte with the 0 value needs to be
+converted into to a two byte sequence with the values 245 128.
+
+Subsequently each instance of 245 encountered in the data needs to be converted
+as well, using the two byte sequence 248 184 or 248 245. This conversion process
+is known as escaping, which I'll describe in detail below.
 
 Escaping
 --------
 
-Earlier we saw the escaping of 0x00 to 0xF5 0x80. However, in many cases
+Earlier we saw the escaping of 0 to 245 128. However, in many cases
 programming languages have special characters that pose processing or security
 issues when they are not escaped. The \\ and " characters come to mind, but in
 theory any character can be a special character that needs to be escaped.
 
-In order to escape any ASCII character Base252 reserves 0xF5, 0xF6, 0xF7 and
-0xF8. The math to escape is simple and similar to UTF-8.
+In order to escape any ASCII character Base252 reserves character value 245, 246,
+247 and 248. The math to escape is simple and similar to UTF-8.
 ```c
-0xF5 + char / 64
-0x80 + char % 64
+245 + char / 64
+128 + char % 64
 ```
-Subsequently each occurance of 0xF5, 0xF6, 0xF7 and 0xF8 in the data needs to
+Subsequently each occurance of 245, 246, 247 and 248 in the data needs to
 be escaped.
 
-Characters 128 through 191 cannot be as easily escaped since 128 through 191 is
-typically used for the second byte of each escaped code. However, since the
-second byte needs to be modulated by 64, a value between 64 and 127, or between
-192 and 255 could be used to encode the second byte.
+Characters 128 through 191 cannot be as easily fully escaped since they are
+typically used for the second byte of each escaped code. However,
+since the second byte needs to be modulated by 64, a value between 64 and 127,
+or between 192 and 255, could be used to encode the second byte. All character
+values are valid for the second byte, with the exception of 0.
 
-Special care is needed in that case in order to encode, though the decoding
-process remains identical.
+Subsequently there are 3 valid ways to fully escape the 0 value, using 245 64,
+245 128, and 245 192.
 
 The example below escapes the 5 required codes as well as the '\\' character.
 ```c
