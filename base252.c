@@ -22,6 +22,7 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 	The data_to_base252 function uses zlib to compress data, next translates the data
 	to Base252 to create valid C strings.
 
+	The base252_to_data function reverses the process.
 
 */
 
@@ -218,46 +219,45 @@ int base252_to_data(char *in, size_t size_in, char *out, size_t size_out)
 {
 	char *buf, *ptb, *pti;
 	z_stream *stream;
-	int len, val, cnt;
+	int val, cnt;
 
 	buf = malloc(size_in);
 
 	ptb = buf;
 	cnt = 0;
-	len = 0;
 
 	while (cnt < size_in)
 	{
 		switch ((unsigned char) in[cnt])
 		{
+			default:
+				*ptb++ = in[cnt++];
+				continue;
+
 			case 245:
-				cnt++;
-				*ptb++ = 0 + (unsigned char) in[cnt++] % 64;
+				*ptb++ = 0 + (unsigned char) in[++cnt] % 64;
 				break;
 
 			case 246:
-				cnt++;
-				*ptb++ = 64 + (unsigned char) in[cnt++] % 64;
+				*ptb++ = 64 + (unsigned char) in[++cnt] % 64;
 				break;
 
 			case 247:
-				cnt++;
-				*ptb++ = 128 + (unsigned char) in[cnt++] % 64;
+				*ptb++ = 128 + (unsigned char) in[++cnt] % 64;
 				break;
 
 			case 248:
-				cnt++;
-				*ptb++ = 192 + (unsigned char) in[cnt++] % 64;
-				break;
-
-			default:
-				*ptb++ = in[cnt++];
+				*ptb++ = 192 + (unsigned char) in[++cnt] % 64;
 				break;
 		}
-		len++;
+
+		if (cnt < size_in)
+		{
+			cnt++;
+		}
 	}
 
-	val = zlib_decompress(buf, len, out, size_out);
+	val = zlib_decompress(buf, ptb - buf, out, size_out);
 
 	free(buf);
 
@@ -273,7 +273,7 @@ int main(void)
 	char input[BUFFER_SIZE], output[BUFFER_SIZE];
 	int size;
 
-	strcpy(input, "hello world");
+	strcpy(input, "THE SOFTWARE IS PROVIDED \"AS IS\" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.");
 
 	strcpy(output, "");
 
