@@ -88,29 +88,29 @@ code below should translate any proper Base252 string.
         {
                 switch (input[cnt])
                 {
-                        case 245:
-                                cnt++;
-                                *output++ = 0 + input[cnt++] % 64;
+                        case 245: 
+                                *output++ = 0 + input[++cnt] % 64;
                                 break;
 
                         case 246:
-                                cnt++;
-                                *output++ = 64 + input[cnt++] % 64;
+                                *output++ = 64 + input[++cnt] % 64;
                                 break;
 
                         case 247:
-                                cnt++;
-                                *output++ = 128 + input[cnt++] % 64;
+                                *output++ = 128 + input[++cnt] % 64;
                                 break;
 
                         case 248:
-                                cnt++;
-                                *output++ = 192 + input[cnt++] % 64;
+                                *output++ = 192 + input[++cnt] % 64;
                                 break;
 
                         default:
                                 *output++ = input[cnt++];
-                                break;
+                                continue;
+                }
+                if (input[cnt] != 0)
+                {
+                        cnt++;
                 }
         }
         *output++ = 0;
