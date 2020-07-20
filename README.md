@@ -1,7 +1,10 @@
 Base252
 -------
 
-The Base252 encoding draws inspiration from UTF-8, its strengths are minimal overhead and flexible optional escaping.
+Base252 is an encoding scheme primarily intended to turn binary data into valid C strings
+with minimal overhead while allowing flexible optional escaping of any byte value.
+
+The Base252 encoding draws inspiration from UTF-8.
 
 | Dec |  Hex | Name    | Escape Code |
 |----- | ---- | ------  | ------ |
@@ -14,11 +17,11 @@ The Base252 encoding draws inspiration from UTF-8, its strengths are minimal ove
 Translating binary data to Base252
 ----------------------------------
 
-The first step is to convert the data into a C string. A C string exists of a sequence
-of bytes with values between 1 and 255. The 0 value is reserved as the string terminator
-and is also known as the NUL byte.
+To keep things simple for starters I'll explain how to turn binary data into a C string. A C
+string exists of a sequence of bytes with values between 1 and 255. The 0 value is reserved
+as the string terminator and is also known as the NUL byte.
 
-In order to turn binary data into Base252 each byte with the 0 value needs to be
+In order to turn binary data into a Base252 string each byte with the 0 value needs to be
 converted into a two byte sequence with the values 245 128.
 
 This conversion process is known as escaping, which I'll describe in detail below.
@@ -26,7 +29,7 @@ This conversion process is known as escaping, which I'll describe in detail belo
 Escaping
 --------
 
-Earlier we saw the escaping of 0 to 245 128. However, in many cases
+Previously we saw the escaping of 0 to 245 128. However, in many cases
 programming languages have special characters that pose processing or security
 issues when they are not escaped. The \\ and " characters come to mind, but in
 theory any character can be a special character that needs to be escaped.
@@ -48,6 +51,9 @@ values are valid for the second byte, with the exception of 0.
 
 Subsequently there are three valid ways to fully escape the 0 value: 245 64,
 245 128, and 245 192.
+
+Similarly there are four ways to escape the 248 value: 248 248, 248 184, 248 120,
+or 248 56.
 
 The example below escapes the 5 required codes as well as the '\\' character.
 ```c
@@ -127,6 +133,20 @@ ASCII or UTF-8 into Base252) and a worst case overhead of 100%. The average
 case should be an overhead of 1.7% and this should also be the typical case
 for compressed / encrypted data.
 
+Usecase
+-------
+The primary usecase is to embed binary data in a typeless string based data storage
+system.
+
 JSON
 ----
-Base252 shouldn't be used in combination with JSON because the JSON specification requires data to contain valid unicode codepoints.
+Base252 cannot easily be used in combination with JSON because the JSON specification
+requires data to contain valid unicode codepoints. However, if you are willing to
+ignore that requirement and use JSON in a closed environment, Base252 can be used
+if your JSON parser permits it.
+
+VTON
+----
+Base252 was designed to work in conjunction with VTON, a typeless object notation.
+
+https://github.com/scandum/vton
